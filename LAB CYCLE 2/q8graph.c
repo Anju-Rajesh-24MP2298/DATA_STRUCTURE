@@ -1,44 +1,32 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <stdbool.h>
-
 #define MAX_VERTICES 10
-// Adjacency list node
 struct Node {
     int vertex;
     struct Node* next;
 };
-
-// Graph structure
 struct Graph {
     int numVertices;
     struct Node* adjList[MAX_VERTICES];
 };
-
-// Function to create a new node
 struct Node* createNode(int vertex) {
     struct Node* newNode = (struct Node*)malloc(sizeof(struct Node));
     newNode->vertex = vertex;
     newNode->next = NULL;
     return newNode;
 }
-
-// Function to initialize the graph
 void initGraph(struct Graph* graph, int vertices) {
     graph->numVertices = vertices;
     for (int i = 0; i < vertices; i++) {
         graph->adjList[i] = NULL;
     }
 }
-
-// Function to add an edge to the graph (Directed)
 void addEdge(struct Graph* graph, int src, int dest) {
     struct Node* newNode = createNode(dest);
     newNode->next = graph->adjList[src];
     graph->adjList[src] = newNode;
 }
-
-// DFS (Depth First Search) - Recursive
 void DFSUtil(struct Graph* graph, int vertex, bool visited[]) {
     visited[vertex] = true;
     printf("%d ", vertex);
@@ -51,16 +39,18 @@ void DFSUtil(struct Graph* graph, int vertex, bool visited[]) {
         adjList = adjList->next;
     }
 }
-
-// DFS Traversal
 void DFS(struct Graph* graph, int startVertex) {
     bool visited[MAX_VERTICES] = { false };
     printf("DFS starting from vertex %d: ", startVertex);
     DFSUtil(graph, startVertex, visited);
+    for (int i = 0; i < graph->numVertices; i++) {
+        if (!visited[i]) {
+            DFSUtil(graph, i, visited);
+        }
+    }
+
     printf("\n");
 }
-
-// BFS (Breadth First Search)
 void BFS(struct Graph* graph, int startVertex) {
     bool visited[MAX_VERTICES] = { false };
     int queue[MAX_VERTICES];
@@ -84,13 +74,17 @@ void BFS(struct Graph* graph, int startVertex) {
             adjList = adjList->next;
         }
     }
+    for (int i = 0; i < graph->numVertices; i++) {
+        if (!visited[i]) {
+            queue[rear++] = i;
+            visited[i] = true;
+            printf("%d ", i);
+        }
+    }
     printf("\n");
 }
-
-// Topological Sort - Using DFS
 void topologicalSortUtil(struct Graph* graph, int vertex, bool visited[], int stack[], int* stackIndex) {
     visited[vertex] = true;
-
     struct Node* adjList = graph->adjList[vertex];
     while (adjList != NULL) {
         int adjVertex = adjList->vertex;
@@ -103,8 +97,6 @@ void topologicalSortUtil(struct Graph* graph, int vertex, bool visited[], int st
     stack[*stackIndex] = vertex;
     (*stackIndex)++;
 }
-
-// Topological Sort
 void topologicalSort(struct Graph* graph) {
     bool visited[MAX_VERTICES] = { false };
     int stack[MAX_VERTICES];
@@ -122,60 +114,55 @@ void topologicalSort(struct Graph* graph) {
     }
     printf("\n");
 }
-
-// Function to display the graph (adjacency list)
-void displayGraph(struct Graph* graph) {
-    printf("\nGraph Representation using Adjacency List:\n");
+void displayAdjMatrix(struct Graph* graph) {
+    printf("\nGraph Representation (Adjacency Matrix):\n");
+    int adjMatrix[MAX_VERTICES][MAX_VERTICES] = {0};
     for (int i = 0; i < graph->numVertices; i++) {
         struct Node* adjList = graph->adjList[i];
-        printf("Vertex %d: ", i);
         while (adjList != NULL) {
-            printf("%d -> ", adjList->vertex);
+            adjMatrix[i][adjList->vertex] = 1;
             adjList = adjList->next;
         }
-        printf("NULL\n");
-}
+    }
+    for (int i = 0; i < graph->numVertices; i++) {
+        for (int j = 0; j < graph->numVertices; j++) {
+            printf("%d ", adjMatrix[i][j]);
+        }
+        printf("\n");
+    }
 }
 
 int main() {
     struct Graph graph;
-    int vertices, edges,src, dest, startVertex, choice;
-
-    // Input number of vertices and edges
-    printf("Enter the number of vertices in the graph: ");
+    int vertices, edges, src, dest, startVertex, choice;
+    printf("Enter the number of vertices: ");
     scanf("%d", &vertices);
     initGraph(&graph, vertices);
-
-    // Input edges
-    printf("Enter the number of edges in the graph: ");
+    printf("Enter the number of edges: ");
     scanf("%d", &edges);
-
     for (int i = 0; i < edges; i++) {
-        printf("Enter edge %d in the form (source destination): ", i + 1);
+        printf("Enter edge %d (source destination) : ", i + 1);
         scanf("%d %d", &src, &dest);
-
-        // Add directed edge to the graph
         if (src >= 0 && src < vertices && dest >= 0 && dest < vertices) {
             addEdge(&graph, src, dest);
         } else {
             printf("Invalid edge! Please enter vertices within the range of 0 to %d.\n", vertices - 1);
-            i--;  // Decrement i to allow user to input the edge again
+            i--;
         }
     }
-    printf("\nGraph Traversal");
-    // Main menu
     do {
-        printf("\n1. Display Graph");
-        printf("\n2. Perform DFS Traversal");
-        printf("\n3. Perform BFS Traversal");
-        printf("\n4. Perform Topological Sort");
-        printf("\n5. Exit");
-        printf("\nEnter your choice: ");
+        //printf("\nMenu:\n");
+        printf("\n\n1. Display Adjacency Matrix\n");
+        printf("2. DFS Traversal\n");
+        printf("3. BFS Traversal\n");
+        printf("4. Topological Sort\n");
+        printf("5. Exit\n");
+        printf("Enter your choice: ");
         scanf("%d", &choice);
 
         switch (choice) {
             case 1:
-                displayGraph(&graph);
+                displayAdjMatrix(&graph);
                 break;
             case 2:
                 printf("\nEnter the start vertex for DFS: ");
@@ -199,13 +186,11 @@ int main() {
                 topologicalSort(&graph);
                 break;
             case 5:
-                printf("Exit.\n");
+                printf("Exiting the program.\n");
                 break;
             default:
-                printf("Invalid choice!!\n");
+                printf("Invalid choice! Please try again.\n");
         }
     } while (choice != 5);
-
     return 0;
 }
-
