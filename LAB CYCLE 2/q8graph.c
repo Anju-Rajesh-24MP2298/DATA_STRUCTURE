@@ -3,7 +3,6 @@
 #include <stdbool.h>
 
 #define MAX_VERTICES 10
-
 // Adjacency list node
 struct Node {
     int vertex;
